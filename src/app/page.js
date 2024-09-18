@@ -35,8 +35,9 @@ export default function RandomWheel() {
   }
 
   const spinWheel = () => {
-    if (!restaurants?.length) {
-      alert("Please add restaurants");
+    if (!restaurants?.length || restaurants?.length < 2) {
+      alert("Please add more restaurants");
+      return;
     }
 
     if (isSpinning) return;
@@ -152,41 +153,6 @@ export default function RandomWheel() {
 
   return (
     <div className={styles.body}>
-      {/* {restaurants.length ? (
-        <div
-          className={`list-chosen ${
-            restaurants.length > 8 ? "h-96 overflow-y-auto" : ""
-          } `}
-          style={{ backgroundColor: "white" }}
-        >
-          <table className="min-w-full bg-white border border-gray-300">
-            <thead>
-              <tr>
-                <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b">
-                  List restaurants
-                </th>
-                <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {restaurants.map((name, index) => (
-                <tr key={index} className="border-b">
-                  <td className="px-6 py-4 text-sm text-gray-900">{name}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <button
-                      className="px-4 py-2 text-white bg-red-400 rounded-md"
-                      onClick={() => deleteRestaurant(index)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null} */}
-
       {restaurants.length > 0 && (
         <div className="bg-white">
           <p className="text-lg font-semibold border-b border-[#ccc] p-4">
@@ -230,7 +196,7 @@ export default function RandomWheel() {
           onChange={(e) => {
             setKeyword(e.target.value);
             debounce(() => {
-              // fetchSuggesstLocation(e.target.value);
+              fetchSuggesstLocation(e.target.value);
             }, 1000)();
           }}
         />
