@@ -70,6 +70,7 @@ export default function RandomWheel() {
     setRestaurants(updatedRestaurants);
     localStorage.setItem("restaurants", JSON.stringify(updatedRestaurants));
   };
+
   const fetchSuggesstLocation = async (keyword) => {
     const data = await axios.get(
       `https://rsapi.goong.io/Place/AutoComplete?api_key=${API_KEY}&input=${keyword}`
@@ -155,7 +156,7 @@ export default function RandomWheel() {
           onChange={(e) => {
             setKeyword(e.target.value);
             debounce(() => {
-              fetchSuggesstLocation(e.target.value);
+              // fetchSuggesstLocation(e.target.value);
             }, 1000)();
           }}
         />
