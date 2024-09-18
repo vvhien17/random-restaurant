@@ -1,0 +1,144 @@
+.body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background:
+        radial-gradient(circle at 25% 25%, #FF6B6B 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, #4ECDC4 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, #FED766 0%, transparent 50%);
+    background-size: 200% 200%;
+    animation: movingBackground 15s ease infinite forwards;
+    overflow: hidden;
+}
+
+@keyframes movingBackground {
+    0% {background-position: 0% 0%;}
+    50% {background-position: 100% 100%;}
+    100% {background-position: 0% 0%;}
+}
+
+.wheelContainer {
+    position: relative;
+    width: 90vw;
+    height: 90vw;
+    max-width: 400px;
+    max-height: 400px;
+}
+
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.wheelCenter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    z-index: 10;
+    cursor: pointer;
+    border: none;
+}
+
+.selector {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 40px solid #333;
+    z-index: 5;
+}
+
+.resultMessage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 20;
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+}
+
+.resultMessage.show {
+    opacity: 1;
+}
+
+.resultMessage h1 {
+    font-size: 48px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.resultText {
+    color: black;
+}
+
+.restaurantName {
+    background: linear-gradient(45deg, #FF6B6B, #4ECDC4, #FED766);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shine 2s linear infinite;
+}
+
+@keyframes shine {
+    0% {background-position: 0% 50%;}
+    100% {background-position: 100% 50%;}
+}
+
+@media (max-width: 600px) {
+    .resultMessage h1 {
+        font-size: 32px;
+    }
+}
+
+.addRestaurantForm {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.restaurantInput {
+    padding: 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.addButton {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.addButton:hover {
+    background-color: #45a049;
+}
