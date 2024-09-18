@@ -6,7 +6,6 @@ import axios from "axios";
 
 const initialRestaurants = [];
 
-
 export default function RandomWheel() {
   const canvasRef = useRef(null);
   const [restaurants, setRestaurants] = useState([]);
@@ -27,7 +26,12 @@ export default function RandomWheel() {
   };
 
   function randomHexColor() {
-    return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    return (
+      "#" +
+      Math.floor(Math.random() * 16777215)
+        .toString(16)
+        .padStart(6, "0")
+    );
   }
 
   const spinWheel = () => {
@@ -110,7 +114,7 @@ export default function RandomWheel() {
       while (ctx.measureText(truncated).width > maxWidth) {
         truncated = truncated.slice(0, -1);
       }
-      return truncated.length < text.length ? truncated + '...' : truncated;
+      return truncated.length < text.length ? truncated + "..." : truncated;
     }
 
     function drawWheel() {
@@ -148,35 +152,65 @@ export default function RandomWheel() {
 
   return (
     <div className={styles.body}>
-      {restaurants.length ? <div className={`list-chosen ${restaurants.length > 8 ? "h-96 overflow-y-auto" : ""
-        } `} style={{ backgroundColor: 'white' }}>
-        <table className="min-w-full bg-white border border-gray-300">
-          <thead>
-            <tr>
-              <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">
-                List restaurants
-              </th>
-              <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {restaurants.map((name, index) => (
-              <tr key={index} className="border-b">
-                <td className="px-6 py-4 text-sm text-gray-900">{name}</td>
-                <td className="px-6 py-4 text-sm">
-                  <button
-                    className="bg-red-400 text-white px-4 py-2 rounded-md"
-                    onClick={() => deleteRestaurant(index)}
-                  >
-                    Delete
-                  </button>
-                </td>
+      {/* {restaurants.length ? (
+        <div
+          className={`list-chosen ${
+            restaurants.length > 8 ? "h-96 overflow-y-auto" : ""
+          } `}
+          style={{ backgroundColor: "white" }}
+        >
+          <table className="min-w-full bg-white border border-gray-300">
+            <thead>
+              <tr>
+                <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b">
+                  List restaurants
+                </th>
+                <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b"></th>
               </tr>
+            </thead>
+            <tbody>
+              {restaurants.map((name, index) => (
+                <tr key={index} className="border-b">
+                  <td className="px-6 py-4 text-sm text-gray-900">{name}</td>
+                  <td className="px-6 py-4 text-sm">
+                    <button
+                      className="px-4 py-2 text-white bg-red-400 rounded-md"
+                      onClick={() => deleteRestaurant(index)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null} */}
+
+      {restaurants.length > 0 && (
+        <div className="bg-white">
+          <p className="text-lg font-semibold border-b border-[#ccc] p-4">
+            List restaurants
+          </p>
+          <div className="grid max-h-[50vh] overflow-auto">
+            {restaurants.map((name, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between gap-6 p-4 border-b"
+              >
+                <p className="text-sm text-gray-900">{name}</p>
+
+                <button
+                  className="px-4 py-2 text-white bg-red-400 rounded-md"
+                  onClick={() => deleteRestaurant(index)}
+                >
+                  Delete
+                </button>
+              </div>
             ))}
-          </tbody>
-        </table>
-      </div> : null}
+          </div>
+        </div>
+      )}
 
       <div className={styles.wheelContainer}>
         <div className={styles.selector}></div>
@@ -213,15 +247,7 @@ export default function RandomWheel() {
           </div>
         )}
       </div>
-      <button onClick={fetchSuggesstLocation}>Search</button>
-      <select onChange={(e) => addRestaurant(e)}>
-        {listSuggestLocation?.length > 0 &&
-          listSuggestLocation.map((item, index) => (
-            <option key={index} value={item?.structured_formatting?.main_text}>
-              {item.description}
-            </option>
-          ))}
-      </select>
+
       <div
         className={`${styles.resultMessage} ${showResult ? styles.show : ""}`}
         role="alert"
