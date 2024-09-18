@@ -58,7 +58,6 @@ export default function RandomWheel() {
 
   const addRestaurant = (e) => {
     e.preventDefault();
-    debugger;
     const updatedRestaurants = [...restaurants, e.target.value];
     setRestaurants(updatedRestaurants);
     localStorage.setItem("restaurants", JSON.stringify(updatedRestaurants));
