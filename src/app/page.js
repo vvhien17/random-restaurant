@@ -71,6 +71,12 @@ export default function RandomWheel() {
     localStorage.setItem("restaurants", JSON.stringify(updatedRestaurants));
   };
 
+  const deleteRestaurant = (index) => {
+    const updatedRestaurants = restaurants.filter((_, i) => i !== index);
+    setRestaurants(updatedRestaurants);
+    localStorage.setItem("restaurants", JSON.stringify(updatedRestaurants));
+  };
+
   const fetchSuggesstLocation = async (keyword) => {
     const data = await axios.get(
       `https://rsapi.goong.io/Place/AutoComplete?api_key=${API_KEY}&input=${keyword}`
@@ -173,15 +179,25 @@ export default function RandomWheel() {
           </div>
         )}
       </div>
-      {/* <button onClick={fetchSuggesstLocation}>Search</button> */}
-      {/* <select onChange={(e) => addRestaurant(e)}>
+      <button onClick={fetchSuggesstLocation}>Search</button>
+      <select onChange={(e) => addRestaurant(e)}>
         {listSuggestLocation?.length > 0 &&
           listSuggestLocation.map((item, index) => (
             <option key={index} value={item?.structured_formatting?.main_text}>
               {item.description}
             </option>
           ))}
-      </select> */}
+      </select>
+
+      <h2>Your Restaurants:</h2>
+      <ul>
+        {restaurants.map((restaurant, index) => (
+          <li key={index}>
+            {restaurant}
+            <button onClick={() => deleteRestaurant(index)}>Delete</button>
+          </li>
+        ))}
+      </ul>
       <div
         className={`${styles.resultMessage} ${showResult ? styles.show : ""}`}
         role="alert"
