@@ -6,16 +6,6 @@ import axios from "axios";
 
 const initialRestaurants = [];
 
-const colors = [
-  "#FF9999",
-  "#99FF99",
-  "#9999FF",
-  "#FFFF99",
-  "#FF99FF",
-  "#99FFFF",
-  "#FFD699",
-  "#FF9966",
-];
 
 export default function RandomWheel() {
   const canvasRef = useRef(null);
@@ -35,6 +25,10 @@ export default function RandomWheel() {
       timeout = setTimeout(() => func(...args), wait);
     };
   };
+
+  function randomHexColor() {
+    return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+  }
 
   const spinWheel = () => {
     if (!restaurants?.length) {
@@ -111,6 +105,13 @@ export default function RandomWheel() {
       canvas.height = container.clientHeight;
       drawWheel();
     }
+    function truncateText(text, maxWidth) {
+      let truncated = text;
+      while (ctx.measureText(truncated).width > maxWidth) {
+        truncated = truncated.slice(0, -1);
+      }
+      return truncated.length < text.length ? truncated + '...' : truncated;
+    }
 
     function drawWheel() {
       const centerX = canvas.width / 2;
@@ -122,7 +123,7 @@ export default function RandomWheel() {
       for (let i = 0; i < totalRestaurants; i++) {
         const angle = i * arc;
         ctx.beginPath();
-        ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+        ctx.fillStyle = randomHexColor();
         ctx.moveTo(centerX, centerY);
         ctx.arc(centerX, centerY, radius, angle, angle + arc);
         ctx.lineTo(centerX, centerY);
@@ -135,8 +136,11 @@ export default function RandomWheel() {
         ctx.font = "bold 12px Arial";
         ctx.strokeStyle = "white";
         ctx.lineWidth = 3;
-        ctx.strokeText(restaurants[i], radius - 10, 5);
-        ctx.fillText(restaurants[i], radius - 10, 5);
+        const maxTextWidth = radius * 0.7; // Adjust this value to change the maximum text width
+        const truncatedText = truncateText(restaurants[i], maxTextWidth);
+
+        ctx.strokeText(truncatedText, radius - 10, 5);
+        ctx.fillText(truncatedText, radius - 10, 5);
         ctx.restore();
       }
     }
@@ -144,6 +148,36 @@ export default function RandomWheel() {
 
   return (
     <div className={styles.body}>
+      {restaurants.length ? <div className={`list-chosen ${restaurants.length > 8 ? "h-96 overflow-y-auto" : ""
+        } `} style={{ backgroundColor: 'white' }}>
+        <table className="min-w-full bg-white border border-gray-300">
+          <thead>
+            <tr>
+              <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">
+                List restaurants
+              </th>
+              <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {restaurants.map((name, index) => (
+              <tr key={index} className="border-b">
+                <td className="px-6 py-4 text-sm text-gray-900">{name}</td>
+                <td className="px-6 py-4 text-sm">
+                  <button
+                    className="bg-red-400 text-white px-4 py-2 rounded-md"
+                    onClick={() => deleteRestaurant(index)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div> : null}
+
       <div className={styles.wheelContainer}>
         <div className={styles.selector}></div>
         <canvas ref={canvasRef} className={styles.wheel}></canvas>
@@ -188,16 +222,6 @@ export default function RandomWheel() {
             </option>
           ))}
       </select>
-
-      <h2>Your Restaurants:</h2>
-      <ul>
-        {restaurants.map((restaurant, index) => (
-          <li key={index}>
-            {restaurant}
-            <button onClick={() => deleteRestaurant(index)}>Delete</button>
-          </li>
-        ))}
-      </ul>
       <div
         className={`${styles.resultMessage} ${showResult ? styles.show : ""}`}
         role="alert"
