@@ -27,6 +27,15 @@ export default function RandomWheel() {
   const [listSuggestLocation, setListSuggestLocation] = useState();
   const [keyword, setKeyword] = useState("");
 
+  const debounce = (func, wait) => {
+    let timeout;
+
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), wait);
+    };
+  };
+
   const spinWheel = () => {
     if (!restaurants?.length) {
       alert("Please add restaurants");
@@ -56,13 +65,12 @@ export default function RandomWheel() {
     }, 5000);
   };
 
-  const addRestaurant = (e) => {
-    e.preventDefault();
-    const updatedRestaurants = [...restaurants, e.target.value];
+  const addRestaurant = (value) => () => {
+    const updatedRestaurants = [...restaurants, value];
     setRestaurants(updatedRestaurants);
     localStorage.setItem("restaurants", JSON.stringify(updatedRestaurants));
   };
-  const fetchSuggesstLocation = async () => {
+  const fetchSuggesstLocation = async (keyword) => {
     const data = await axios.get(
       `https://rsapi.goong.io/Place/AutoComplete?api_key=${API_KEY}&input=${keyword}`
     );
@@ -141,35 +149,38 @@ export default function RandomWheel() {
         </button>
       </div>
 
-      {/* <form onSubmit={addRestaurant} className={styles.addRestaurantForm}>
-
-
-
+      <div className="form-add-restaurant">
         <input
-          type="text"
-          value={newRestaurant}
-          onChange={(e) => setNewRestaurant(e.target.value)}
-          placeholder="Enter restaurant name"
-          className={styles.restaurantInput}
+          placeholder="Search restaurant..."
+          onChange={(e) => {
+            setKeyword(e.target.value);
+            debounce(() => {
+              fetchSuggesstLocation(e.target.value);
+            }, 1000)();
+          }}
         />
-        <button type="submit" className={styles.addButton}>
-          Add Restaurant
-        </button>
-      </form> */}
-
-      <input
-        placeholder="Search restaurent..."
-        onChange={(e) => setKeyword(e.target.value)}
-      ></input>
-      <button onClick={fetchSuggesstLocation}>Search</button>
-      <select onChange={(e) => addRestaurant(e)}>
+        {listSuggestLocation?.length > 0 && keyword.length > 0 && (
+          <div className="list-locations">
+            {listSuggestLocation.map((item, idx) => (
+              <p
+                key={idx}
+                onClick={addRestaurant(item?.structured_formatting?.main_text)}
+              >
+                {item.description}
+              </p>
+            ))}
+          </div>
+        )}
+      </div>
+      {/* <button onClick={fetchSuggesstLocation}>Search</button> */}
+      {/* <select onChange={(e) => addRestaurant(e)}>
         {listSuggestLocation?.length > 0 &&
           listSuggestLocation.map((item, index) => (
             <option key={index} value={item?.structured_formatting?.main_text}>
               {item.description}
             </option>
           ))}
-      </select>
+      </select> */}
       <div
         className={`${styles.resultMessage} ${showResult ? styles.show : ""}`}
         role="alert"

@@ -25,3 +25,38 @@ body {
     text-wrap: balance;
   }
 }
+
+.form-add-restaurant {
+  display: grid;
+  position: relative;
+}
+
+.form-add-restaurant input {
+  width: 300px;
+  padding: 4px 12px;
+  border-radius: 8px;
+}
+
+.form-add-restaurant .list-locations{
+  height: 300px;
+  overflow: auto;
+  display: grid;
+  gap: 4px;
+  position: absolute;
+  top: 36px;
+  left: 0;
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.form-add-restaurant .list-locations p {
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.form-add-restaurant .list-locations p:hover {
+  background: #ccc;
+  cursor: pointer;
+}
