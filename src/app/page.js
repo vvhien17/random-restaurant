@@ -5,9 +5,8 @@ import styles from "./randomwheel.module.css";
 import axios from "axios";
 
 const emailjs = require('emailjs-com');
-emailjs.init('szRgZMzeOeQfqWlRc')
-
 const initialRestaurants = [];
+emailjs.init(process.env.PUBLIC_SERVICE_KEY);
 
 export default function RandomWheel() {
   const canvasRef = useRef(null);
@@ -15,11 +14,19 @@ export default function RandomWheel() {
   const [chosenRestaurant, setChosenRestaurant] = useState("");
   const [isSpinning, setIsSpinning] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const API_KEY = "xYMZRYtUiOGz90R5Lt3z7uAAJWaZb22L3hv4SKWs";
+  const API_KEY = process.env.GOONG_MAP_API_KEY;
   const [listSuggestLocation, setListSuggestLocation] = useState();
   const [keyword, setKeyword] = useState("");
   const [emails, setEmails] = useState(""); // State for email addresses
   const [emailMessage, setEmailMessage] = useState(""); // State for email message
+  const [isSearchActive, setIsSearchActive] = useState('result');
+  const [mapsLink, setMapsLink] = useState('');
+
+
+  const handleChange = (event) => {
+    setEmails(event.target.value);
+    localStorage.setItem("emails", JSON.stringify(emails))
+  };
 
   const debounce = (func, wait) => {
     let timeout;
@@ -62,15 +69,25 @@ export default function RandomWheel() {
     );
 
     setTimeout(() => {
-      setChosenRestaurant(restaurants[selectedIndex]);
+      setChosenRestaurant(`${restaurants[selectedIndex].name} tại ${restaurants[selectedIndex].address}`);
+      setMapsLink(`https://www.google.com/maps?q=${restaurants[selectedIndex].lat},${restaurants[selectedIndex].lng}`);
       setShowResult(true);
       setIsSpinning(false);
-      setTimeout(() => setShowResult(false), 3000);
     }, 5000);
   };
 
-  const addRestaurant = (value) => () => {
-    const updatedRestaurants = [...restaurants, value];
+  const addRestaurant = (value) => async () => {
+    const seleted = listSuggestLocation.filter(item => item.structured_formatting?.main_text == value);
+    const geo = await axios.get(
+      `https://rsapi.goong.io/geocode?place_id=${seleted[0].place_id}&api_key=${API_KEY}`
+    );
+    const newItem = {
+      name: seleted[0].structured_formatting?.main_text,
+      lat: geo.data.results[0].geometry.location.lat,
+      lng: geo.data.results[0].geometry.location.lng,
+      address: seleted[0].structured_formatting?.secondary_text,
+    }
+    const updatedRestaurants = [...restaurants, newItem];
     setRestaurants(updatedRestaurants);
     localStorage.setItem("restaurants", JSON.stringify(updatedRestaurants));
   };
@@ -89,9 +106,30 @@ export default function RandomWheel() {
       setListSuggestLocation(data.data.predictions);
     }
   };
+  const sendGroupEmail = (e) => {
+    e.preventDefault();
+    const emailArray = emails.split('\n').filter(Boolean).map((email) => email.trim());
+    if (emailArray.length === 0) {
+      setShowResult(false);
+      return;
+    }
+    const templateParams = {
+      to_email: emailArray,
+      message: `Hi guy, we are going to have meal togeter!! \n Here is the link google map for our restaurant:\n ${mapsLink} `,
+    };
+
+    emailjs.send(process.env.SERVICE_ID, process.env.TEMPLATE_ID, templateParams)
+      .then((response) => {
+        alert('Emails sent successfully!', response.status);
+      }, (error) => {
+        alert('Error sending emails: ', error);
+      });
+    setShowResult(false);
+  };
 
   useEffect(() => {
     const savedRestaurants = localStorage.getItem("restaurants");
+
     if (savedRestaurants) {
       setRestaurants(JSON.parse(savedRestaurants));
     } else {
@@ -147,7 +185,7 @@ export default function RandomWheel() {
         ctx.strokeStyle = "white";
         ctx.lineWidth = 3;
         const maxTextWidth = radius * 0.7; // Adjust this value to change the maximum text width
-        const truncatedText = truncateText(restaurants[i], maxTextWidth);
+        const truncatedText = truncateText(restaurants[i].name, maxTextWidth);
 
         ctx.strokeText(truncatedText, radius - 10, 5);
         ctx.fillText(truncatedText, radius - 10, 5);
@@ -156,51 +194,105 @@ export default function RandomWheel() {
     }
   }, [restaurants]); // Add restaurants as a dependency
 
-  const sendGroupEmail = (e) => {    
-    e.preventDefault();
-    const emailArray = emails.split(",").map(email => email.trim());
-    const templateParams = {
-      to_email: emailArray,
-      message: emailMessage,
-      chosenRestaurant,
-    };
 
-    emailjs.send('service_ikcvawh', 'template_x704scm', templateParams)
-      .then((response) => {
-        alert('Emails sent successfully!', response.status);
-      }, (error) => {
-        alert('Error sending emails: ', error);
-      });
-  };
 
   return (
     <div
       className={`${styles.body} px-4 md:px-16 lg:px-24 max-xl:flex-col-reverse`}
     >
-      {restaurants.length > 0 && (
-        <div className="bg-white">
-          <p className="text-lg font-semibold border-b border-[#ccc] p-4">
-            List restaurants
-          </p>
-          <div className="grid max-h-[50vh] overflow-auto">
-            {restaurants.map((name, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between gap-6 p-4 border-b"
-              >
-                <p className="text-sm text-gray-900">{name}</p>
-
-                <button
-                  className="px-4 py-2 text-white bg-red-400 rounded-md"
-                  onClick={() => deleteRestaurant(index)}
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
-          </div>
+      <div className="min-h-[400px] max-h-[400px] min">
+        {/* Tab Navigation */}
+        <div className="tabs text-white flex p-4 gap-6">
+          <button
+            className={`tab-button px-4 py-2 ${isSearchActive == 'result' ? "bg-blue-500" : ""} rounded-md`}
+            onClick={() => { setIsSearchActive('result'); setListSuggestLocation([]) }}
+          >
+            Restaurants list
+          </button>
+          <button
+            className={`tab-button px-4 py-2 ${isSearchActive == 'search' ? "bg-blue-500" : ""} rounded-md`}
+            onClick={() => setIsSearchActive('search')}
+          >
+            Search
+          </button>
+          <button
+            className={`tab-button px-4 py-2 ${isSearchActive == 'email' ? "bg-blue-500" : ""} rounded-md`}
+            onClick={() => setIsSearchActive('email')}
+          >
+            Email list
+          </button>
         </div>
-      )}
+
+        {/* Search Section */}
+        {isSearchActive == 'search' && (
+          <div className="form-add-restaurant mt-4 h-full">
+            <input
+              placeholder="Search restaurant..."
+              onChange={(e) => {
+                setKeyword(e.target.value);
+                debounce(() => {
+                  fetchSuggesstLocation(e.target.value);
+                }, 1000)();
+              }}
+              className="border p-2 w-full"
+            />
+            {listSuggestLocation?.length > 0 && keyword.length > 0 && (
+              <div className="list-locations">
+                {listSuggestLocation.map((item, idx) => (
+                  <p
+                    key={idx}
+                    onClick={addRestaurant(item?.structured_formatting?.main_text)}
+                    className="cursor-pointer p-2 hover:bg-gray-200"
+                  >
+                    {item.description}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+
+        )}
+
+        {/* List Section */}
+        {isSearchActive == 'result' && restaurants.length > 0 && (
+          <div className="restaurant-list mt-4">
+
+            <p className="text-lg font-semibold border-b border-gray-400 p-4">
+              List of Restaurants
+            </p>
+
+            <div className="grid max-h-[50vh] overflow-auto">
+              {restaurants.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between gap-6 p-4 border-b"
+                >
+                  <p className="text-sm text-gray-900">{item.name}</p>
+                  <button
+                    className="px-4 py-2 text-white bg-red-400 rounded-md"
+                    onClick={() => deleteRestaurant(index)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {/* Email Section */}
+        {isSearchActive == 'email' && (
+          <div>
+            <textarea
+              value={emails}
+              className="border rounded-md w-full p-3 focus-visible:outline-none"
+              onChange={handleChange}
+              placeholder="Enter your team email, separated by enter"
+              rows="5"
+              cols="50"
+            />
+          </div>
+        )}
+      </div>
 
       <div className={`${styles.wheelContainer} shrink-0`}>
         <div className={styles.selector}></div>
@@ -213,49 +305,6 @@ export default function RandomWheel() {
           SPIN
         </button>
       </div>
-
-      <div className="form-add-restaurant">
-        <input
-          placeholder="Search restaurant..."
-          onChange={(e) => {
-            setKeyword(e.target.value);
-            debounce(() => {
-              fetchSuggesstLocation(e.target.value);
-            }, 1000)();
-          }}
-        />
-        {listSuggestLocation?.length > 0 && keyword.length > 0 && (
-          <div className="list-locations">
-            {listSuggestLocation.map((item, idx) => (
-              <p
-                key={idx}
-                onClick={addRestaurant(item?.structured_formatting?.main_text)}
-              >
-                {item.description}
-              </p>
-            ))}
-          </div>
-        )}
-      </div>
-      
-      <form onSubmit={sendGroupEmail} className="email-form">
-        <h3>Send Group Email</h3>
-        <input
-          type="text"
-          placeholder="Enter email addresses (comma separated)"
-          value={emails}
-          onChange={(e) => setEmails(e.target.value)}
-          required
-        />
-        <textarea
-          placeholder="Enter your message"
-          value={emailMessage}
-          onChange={(e) => setEmailMessage(e.target.value)}
-          required
-        />
-        <button type="submit">Send Email</button>
-      </form>
-
       <div
         className={`${styles.resultMessage} ${showResult ? styles.show : ""}`}
         role="alert"
@@ -268,7 +317,24 @@ export default function RandomWheel() {
           <br />
           <span className={styles.resultText}>tonight!</span>
         </h1>
+        <div className="result-buttons mt-4">
+          <button
+            className="px-4 py-2 bg-red-300 text-white rounded-md"
+            onClick={() => {
+              setShowResult(false);
+            }}
+          >
+            Close
+          </button>
+          <button
+            className="px-4 py-2 bg-green-500 text-white rounded-md ml-4"
+            onClick={sendGroupEmail}
+          >
+            Let's go
+          </button>
+        </div>
       </div>
-    </div>
+
+    </div >
   );
 }
