@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import styles from "./randomwheel.module.css";
 import axios from "axios";
 
+const emailjs = require('emailjs-com');
+emailjs.init('szRgZMzeOeQfqWlRc')
+
 const initialRestaurants = [];
 
 export default function RandomWheel() {
@@ -15,6 +18,8 @@ export default function RandomWheel() {
   const API_KEY = "xYMZRYtUiOGz90R5Lt3z7uAAJWaZb22L3hv4SKWs";
   const [listSuggestLocation, setListSuggestLocation] = useState();
   const [keyword, setKeyword] = useState("");
+  const [emails, setEmails] = useState(""); // State for email addresses
+  const [emailMessage, setEmailMessage] = useState(""); // State for email message
 
   const debounce = (func, wait) => {
     let timeout;
@@ -151,6 +156,23 @@ export default function RandomWheel() {
     }
   }, [restaurants]); // Add restaurants as a dependency
 
+  const sendGroupEmail = (e) => {    
+    e.preventDefault();
+    const emailArray = emails.split(",").map(email => email.trim());
+    const templateParams = {
+      to_email: emailArray,
+      message: emailMessage,
+      chosenRestaurant,
+    };
+
+    emailjs.send('service_ikcvawh', 'template_x704scm', templateParams)
+      .then((response) => {
+        alert('Emails sent successfully!', response.status);
+      }, (error) => {
+        alert('Error sending emails: ', error);
+      });
+  };
+
   return (
     <div
       className={`${styles.body} px-4 md:px-16 lg:px-24 max-xl:flex-col-reverse`}
@@ -215,6 +237,24 @@ export default function RandomWheel() {
           </div>
         )}
       </div>
+      
+      <form onSubmit={sendGroupEmail} className="email-form">
+        <h3>Send Group Email</h3>
+        <input
+          type="text"
+          placeholder="Enter email addresses (comma separated)"
+          value={emails}
+          onChange={(e) => setEmails(e.target.value)}
+          required
+        />
+        <textarea
+          placeholder="Enter your message"
+          value={emailMessage}
+          onChange={(e) => setEmailMessage(e.target.value)}
+          required
+        />
+        <button type="submit">Send Email</button>
+      </form>
 
       <div
         className={`${styles.resultMessage} ${showResult ? styles.show : ""}`}
