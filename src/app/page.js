@@ -152,7 +152,9 @@ export default function RandomWheel() {
   }, [restaurants]); // Add restaurants as a dependency
 
   return (
-    <div className={styles.body}>
+    <div
+      className={`${styles.body} px-4 md:px-16 lg:px-24 max-xl:flex-col-reverse`}
+    >
       {restaurants.length > 0 && (
         <div className="bg-white">
           <p className="text-lg font-semibold border-b border-[#ccc] p-4">
@@ -178,7 +180,7 @@ export default function RandomWheel() {
         </div>
       )}
 
-      <div className={styles.wheelContainer}>
+      <div className={`${styles.wheelContainer} shrink-0`}>
         <div className={styles.selector}></div>
         <canvas ref={canvasRef} className={styles.wheel}></canvas>
         <button
