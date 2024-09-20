@@ -8,7 +8,9 @@ const emailjs = require('emailjs-com');
 const initialRestaurants = [];
 emailjs.init(process.env.PUBLIC_SERVICE_KEY);
 
+
 export default function RandomWheel() {
+  console.log(new Date().getHours());
   const API_KEY = process.env.GOONG_MAP_API_KEY;
   const canvasRef = useRef(null);
   const [restaurants, setRestaurants] = useState([]);
