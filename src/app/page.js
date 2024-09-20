@@ -10,7 +10,6 @@ emailjs.init(process.env.PUBLIC_SERVICE_KEY);
 
 
 export default function RandomWheel() {
-  console.log(new Date().getHours());
   const API_KEY = process.env.GOONG_MAP_API_KEY;
   const canvasRef = useRef(null);
   const [restaurants, setRestaurants] = useState([]);
@@ -21,6 +20,7 @@ export default function RandomWheel() {
   const [keyword, setKeyword] = useState("");
   const [isSearchActive, setIsSearchActive] = useState('add');
   const [name, setName] = useState('');
+  const [time, setTime] = useState('tonight');
 
   const debounce = (func, wait) => {
     let timeout;
@@ -31,7 +31,17 @@ export default function RandomWheel() {
   };
 
   const mealTime = () => {
-
+    const time = new Date().getHours();
+    if (time >= 6 && time < 10) {
+      setTime("for the morning");
+    } else if (time >= 10 && time < 14) {
+      setTime("for lunch");
+    } else if (time >= 14 && time < 18) {
+      setTime("for the afternoon");
+    }
+    else {
+      setTime("tonight");
+    }
   }
 
   function randomHexColor() {
@@ -44,6 +54,7 @@ export default function RandomWheel() {
   }
 
   const spinWheel = () => {
+    mealTime();
     if (!restaurants?.length || restaurants?.length < 2) {
       alert("Please add more restaurants");
       return;
@@ -97,6 +108,7 @@ export default function RandomWheel() {
   }
 
   const deleteRestaurant = (index) => {
+    if (isSpinning) return;
     const updatedRestaurants = restaurants.filter((_, i) => i !== index);
     setRestaurants(updatedRestaurants);
     localStorage.setItem("restaurants", JSON.stringify(updatedRestaurants));
@@ -114,7 +126,6 @@ export default function RandomWheel() {
     const savedRestaurants = localStorage.getItem("restaurants");
     if (savedRestaurants) {
       const restaurants = JSON.parse(savedRestaurants);
-      console.log(restaurants);
       setRestaurants(restaurants);
       setIsSearchActive(restaurants.length > 0 ? 'result' : 'add');
     } else {
@@ -177,6 +188,7 @@ export default function RandomWheel() {
         ctx.restore();
       }
     }
+
   }, [restaurants]); // Add restaurants as a dependency
 
 
@@ -311,7 +323,7 @@ export default function RandomWheel() {
             <br />
             <span className={styles.restaurantName}>{chosenRestaurant}</span>
             <br />
-            <span className={styles.resultText}>tonight!</span>
+            <span className={styles.resultText}>{time}!</span>
           </h1>
           <div className="result-buttons mt-4">
             <button
