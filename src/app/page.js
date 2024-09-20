@@ -56,7 +56,7 @@ export default function RandomWheel() {
   const spinWheel = () => {
     mealTime();
     if (!restaurants?.length || restaurants?.length < 2) {
-      alert("Please add more restaurants");
+      alert("Please add more places");
       return;
     }
 
@@ -310,7 +310,7 @@ export default function RandomWheel() {
             onClick={spinWheel}
             aria-label="Spin the wheel"
           >
-            SPIN
+            {isSpinning ? "Spinning..." : "Spin"}
           </button>
         </div>
         <div
