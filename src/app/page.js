@@ -210,7 +210,7 @@ export default function RandomWheel() {
               className={`tab-button px-4 py-2 ${isSearchActive == 'result' ? "bg-blue-500 text-white" : ""} rounded-md`}
               onClick={() => { setIsSearchActive('result'); setListSuggestLocation([]) }}
             >
-              Restaurants list
+              Your list
             </button>
             <button
               className={`tab-button px-4 py-2 ${isSearchActive == 'search' ? "bg-blue-500 text-white" : ""} rounded-md`}
