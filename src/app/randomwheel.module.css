@@ -37,6 +37,9 @@
   border-radius: 50%;
   transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1);
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  background: radial-gradient(circle at 25% 25%, #ff6b6b 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, #4ecdc4 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, #fed766 0%, transparent 50%);
 }
 
 .wheelCenter {
