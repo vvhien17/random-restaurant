@@ -1,72 +1,36 @@
 "use client";
 
-import { useState, useEffect , useRef } from "react";
-import axios from "axios";
-import Wheel from "./components/wheel";
-import RestaurantList from "./components/RestaurantList";
-import Search from "./components/Search";
-import AddRestaurant from "./components/AddRestaurant";
-import ResultMessage from "./components/resultMessage";
+import { useState, useEffect, useRef } from "react";
 import styles from "./randomwheel.module.css";
+import Search from "./components/Search";
+import RestaurantList from "./components/RestaurantList";
+import AddRestaurant from "./components/AddRestaurant";
+import Wheel from "./components/Wheel";
+import ResultMessage from "./components/ResultMessage";
 
 const initialRestaurants = [];
 
 export default function RandomWheel() {
-  const API_KEY = process.env.GOONG_MAP_API_KEY;
-  const canvasRef = useRef(null);
   const [restaurants, setRestaurants] = useState([]);
   const [chosenRestaurant, setChosenRestaurant] = useState("");
   const [isSpinning, setIsSpinning] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const [listSuggestLocation, setListSuggestLocation] = useState();
-  const [keyword, setKeyword] = useState("");
-  const [isSearchActive, setIsSearchActive] = useState('add');
-  const [name, setName] = useState('');
-  const [time, setTime] = useState('tonight');
+  const [isSearchActive, setIsSearchActive] = useState('');
+  const wheelRef = useRef(null);
 
-  const mealTime = () => {
-    const time = new Date().getHours();
-    if (time >= 6 && time < 10) {
-      setTime("for the morning");
-    } else if (time >= 10 && time < 14) {
-      setTime("for lunch");
-    } else if (time >= 14 && time < 18) {
-      setTime("for the afternoon");
-    }
-    else {
-      setTime("tonight");
-    }
-  }
 
-  const addRestaurantName = (e) => {
-    e.preventDefault();
-    const nameList = name.split('\n').map(item => item.trim()).filter(item => item);
-    if (!nameList.length) return;
-    const newItems = nameList.map(item => ({ name: item, address: '', lat: '', lng: '' }));
-    const updatedRestaurants = [...restaurants, ...newItems];
-    setRestaurants(updatedRestaurants);
-    localStorage.setItem("restaurants", JSON.stringify(updatedRestaurants));
-    setName('');
-  };
-
-  // 
-  
   const spinWheel = () => {
-    mealTime();
     if (!restaurants?.length || restaurants?.length < 2) {
       alert("Please add more places");
       return;
     }
-
     if (isSpinning) return;
     setIsSpinning(true);
-
-    const canvas = canvasRef.current;
     const spins = 5 + Math.random() * 20;
     const arc = (Math.PI * 2) / restaurants?.length;
     const spinAngle = Math.random() * Math.PI * 2;
     const totalRotation = spins * Math.PI * 2 + spinAngle;
-    canvas.style.transform = `rotate(${totalRotation - Math.PI / 2}rad)`;
+    wheelRef.current.rotateWheel(totalRotation);
     const finalAngle = totalRotation % (Math.PI * 2);
     const selectedIndex = Math.floor(
       (restaurants?.length - finalAngle / arc) % restaurants?.length
@@ -79,7 +43,17 @@ export default function RandomWheel() {
     }, 5000);
   };
 
-  // Remaining functions for handling logic
+  useEffect(() => {
+    const savedRestaurants = localStorage.getItem("restaurants");
+    if (savedRestaurants) {
+      const restaurants = JSON.parse(savedRestaurants);
+      setRestaurants(restaurants);
+      setIsSearchActive(restaurants.length > 0 ? 'result' : 'add');
+    } else {
+      setRestaurants(initialRestaurants);
+      localStorage.setItem("restaurants", JSON.stringify(initialRestaurants));
+    }
+  }, []);
 
   return (
     <div className="bg-[#baf2f5]">
@@ -92,48 +66,51 @@ export default function RandomWheel() {
         <div className="min-h-[400px] max-h-[400px] w-[343px] md:w-[500px] text-xs md:text-sm lg:text-lg">
           {/* Tab Navigation */}
           <div className="tabs text-black flex p-4 gap-6">
-            <button onClick={() => { setIsSearchActive('result'); setListSuggestLocation([]) }}>
+            <button onClick={() => { setIsSearchActive('result'); }}
+              className={`tab-button px-4 py-2 ${isSearchActive == 'result' ? "bg-blue-500 text-white" : ""} rounded-md`}
+            >
               Your list
             </button>
-            <button onClick={() => setIsSearchActive('search')}>Search Online</button>
-            <button onClick={() => setIsSearchActive('add')}>Add name</button>
+            <button onClick={() => setIsSearchActive('search')}
+              className={`tab-button px-4 py-2 ${isSearchActive == 'search' ? "bg-blue-500 text-white" : ""} rounded-md`}
+            >Search Online</button>
+            <button onClick={() => setIsSearchActive('add')}
+              className={`tab-button px-4 py-2 ${isSearchActive == 'add' ? "bg-blue-500 text-white" : ""} rounded-md`}>
+              Add name</button>
           </div>
 
           {/* Conditional rendering based on isSearchActive */}
           {isSearchActive === 'search' && (
-            <Search 
-              keyword={keyword}
-              setKeyword={setKeyword}
-              fetchSuggesstLocation={fetchSuggesstLocation}
-              listSuggestLocation={listSuggestLocation}
-              addRestaurant={addRestaurant}
+            <Search
+              setRestaurants={setRestaurants}
+              restaurants={restaurants}
             />
           )}
           {isSearchActive === 'result' && restaurants.length > 0 && (
-            <RestaurantList 
+            <RestaurantList
               restaurants={restaurants}
-              deleteRestaurant={deleteRestaurant}
+              setRestaurants={setRestaurants}
+              isSpinning={isSpinning}
             />
           )}
           {isSearchActive === 'add' && (
-            <AddRestaurant 
-              name={name}
-              setName={setName}
-              addRestaurantName={addRestaurantName}
+            <AddRestaurant
+              setRestaurants={setRestaurants}
+              restaurants={restaurants}
             />
           )}
         </div>
 
-        <Wheel 
+        <Wheel
           restaurants={restaurants}
-          isSpinning={isSpinning}
           spinWheel={spinWheel}
+          isSpinning={isSpinning}
+          ref={wheelRef}
         />
-        
-        <ResultMessage 
+
+        <ResultMessage
           showResult={showResult}
           chosenRestaurant={chosenRestaurant}
-          time={time}
           setShowResult={setShowResult}
         />
       </div>

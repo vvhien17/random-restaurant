@@ -1,6 +1,12 @@
 import React from "react";
 
-const RestaurantList = ({ restaurants, deleteRestaurant }) => {
+const RestaurantList = ({ restaurants, setRestaurants, isSpinning }) => {
+  const deleteRestaurant = (index) => {
+    if (isSpinning) return;
+    const updatedRestaurants = restaurants.filter((_, i) => i !== index);
+    setRestaurants(updatedRestaurants);
+    localStorage.setItem("restaurants", JSON.stringify(updatedRestaurants));
+  };
   return (
     <div className="restaurant-list mt-4">
       <p className="text-lg font-semibold border-b border-gray-400 p-4">

@@ -1,8 +1,16 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import styles from "../randomwheel.module.css";
 
-const Wheel = ({ restaurants, isSpinning, spinWheel }) => {
+const Wheel = forwardRef(({ restaurants, isSpinning, spinWheel }, ref) => {
   const canvasRef = useRef(null);
+  useImperativeHandle(ref, () => ({
+    rotateWheel,
+  }));
+
+  const rotateWheel = (totalRotation) => {
+    const canvas = canvasRef.current;
+    canvas.style.transform = `rotate(${totalRotation - Math.PI / 2}rad)`;
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -23,7 +31,6 @@ const Wheel = ({ restaurants, isSpinning, spinWheel }) => {
     function randomHexColor() {
       return "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0");
     }
-
     function drawWheel() {
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
@@ -65,8 +72,10 @@ const Wheel = ({ restaurants, isSpinning, spinWheel }) => {
     }
   }, [restaurants]);
 
+
+
   return (
-    <div className={styles.wheelContainer}>
+    <div className={styles.wheelContainer} ref={ref}>
       <div className={styles.selector}></div>
       <canvas ref={canvasRef} className={styles.wheel}></canvas>
       <button
@@ -78,6 +87,6 @@ const Wheel = ({ restaurants, isSpinning, spinWheel }) => {
       </button>
     </div>
   );
-};
+});
 
 export default Wheel;
