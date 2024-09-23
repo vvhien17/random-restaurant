@@ -57,7 +57,7 @@ export default function RandomWheel() {
 
   return (
     <div className="bg-[#baf2f5]">
-      <div className="items-center justify-between text-center p-2">
+      <div className={` ${styles.title} flex items-center justify-center text-center p-2`}>
         <h1 className="font-bold text-3xl text-transparent bg-clip-text bg-gradient-to-r to-red-600 from-sky-400">
           Foodie Roulette And Fun
         </h1>
@@ -65,7 +65,7 @@ export default function RandomWheel() {
       <div className={`${styles.body} px-4 md:px-16 lg:px-24 max-xl:flex-col-reverse`}>
         <div className="min-h-[400px] max-h-[400px] w-[343px] md:w-[500px] text-xs md:text-sm lg:text-lg">
           {/* Tab Navigation */}
-          <div className="tabs text-black flex p-4 gap-6">
+          <div className="tabs text-black flex p-4 grid  grid-cols-3">
             <button onClick={() => { setIsSearchActive('result'); }}
               className={`tab-button px-4 py-2 ${isSearchActive == 'result' ? "bg-blue-500 text-white" : ""} rounded-md`}
             >

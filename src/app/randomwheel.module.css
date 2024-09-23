@@ -1,14 +1,17 @@
 .body {
   display: flex;
-  gap: 40px;
+  gap: 45px;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: 85vh;
   margin: 0;
   font-family: Arial, sans-serif;
   background-size: 200% 200%;
   animation: movingBackground 15s ease infinite forwards;
   overflow: hidden;
+}
+.title {
+  min-height: 15vh;
 }
 
 @keyframes movingBackground {
